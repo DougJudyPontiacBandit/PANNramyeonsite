@@ -82,7 +82,6 @@
       <Settings v-if="currentPage === 'Settings'" @setCurrentPage="setCurrentPage" />
       <Cart v-if="currentPage === 'Cart'" @setCurrentPage="setCurrentPage" :key="cartKey" />
       <OrderHistory v-if="currentPage === 'OrderHistory'" @setCurrentPage="setCurrentPage" :key="orderHistoryKey" />
-      <PaymentHistory v-if="currentPage === 'PaymentHistory'" @setCurrentPage="setCurrentPage" :key="paymentHistoryKey" />
 
       <!-- Sign Out Confirmation Modal -->
       <div v-if="showSignOutModal" class="signout-modal-overlay" @click="cancelSignOut">
@@ -239,7 +238,6 @@ import ProfileSettings from './components/ProfileSettings.vue'
 import Settings from './components/Settings.vue'
 import Cart from './components/Cart.vue'
 import OrderHistory from './components/OrderHistory.vue'
-import PaymentHistory from './components/PaymentHistory.vue'
 
 export default {
   name: 'App',
@@ -254,8 +252,7 @@ export default {
     ProfileSettings,
     Settings,
     Cart,
-    OrderHistory,
-    PaymentHistory
+    OrderHistory
   },
   data() {
     return {
@@ -269,8 +266,7 @@ export default {
       isSubscribing: false,
       showSignOutModal: false,
       cartKey: 0,
-      orderHistoryKey: 0,
-      paymentHistoryKey: 0
+      orderHistoryKey: 0
     }
   },
   computed: {
@@ -332,7 +328,6 @@ export default {
         'login': 'Login',
         'signup': 'SignUp',
         'order-history': 'OrderHistory',
-        'payment-history': 'PaymentHistory',
         'settings': 'Settings',
         'profile-settings': 'ProfileSettings'
       };
@@ -414,7 +409,6 @@ export default {
         'Login': 'login',
         'SignUp': 'signup',
         'OrderHistory': 'order-history',
-        'PaymentHistory': 'payment-history',
         'Settings': 'settings',
         'ProfileSettings': 'profile-settings'
       };
@@ -431,8 +425,6 @@ export default {
       if (page === 'OrderHistory') {
         this.orderHistoryKey++;
         console.log('📦 Forcing OrderHistory reload');
-      } else if (page === 'PaymentHistory') {
-        this.paymentHistoryKey++;
       } else if (page === 'Cart') {
         this.cartKey++;
       }

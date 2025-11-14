@@ -25,41 +25,6 @@
         </div>
       </transition>
 
-      <!-- Profile Picture Card -->
-      <div class="settings-card">
-        <div class="card-header">
-          <h2 class="card-title">
-            <span class="title-icon">📸</span>
-            Profile Picture
-          </h2>
-        </div>
-        <div class="card-body center">
-          <div class="avatar-section">
-            <div class="avatar-wrapper" @click="triggerFileUpload">
-              <div class="avatar-container">
-                <img v-if="profileData.profilePicture" :src="profileData.profilePicture" alt="Profile" class="avatar-image" />
-                <div v-else class="avatar-placeholder">
-                  <span class="avatar-initials">{{ getInitials() }}</span>
-                </div>
-                <div class="avatar-overlay">
-                  <span class="camera-icon">📷</span>
-                  <span class="upload-text">Change Photo</span>
-                </div>
-              </div>
-              <div class="avatar-badge">✏️</div>
-            </div>
-            <input 
-              type="file" 
-              ref="fileInput" 
-              @change="handleFileUpload" 
-              accept="image/*" 
-              style="display: none;"
-            />
-            <p class="avatar-hint">Click to upload a new profile picture (Max 2MB)</p>
-          </div>
-        </div>
-      </div>
-
       <!-- Personal Information Card -->
       <div class="settings-card">
         <div class="card-header">
@@ -76,15 +41,15 @@
                   First Name <span class="required">*</span>
                 </label>
                 <div class="input-wrapper">
+                  <span class="input-icon-left">👤</span>
                   <input
                     type="text"
                     v-model="profileData.firstName"
-                    :class="['form-input', { 'has-error': validationErrors.firstName }]"
-                    placeholder="Enter first name"
+                    :class="['form-input', 'with-icon-left', { 'has-error': validationErrors.firstName }]"
+                    placeholder="John"
                     required
                     @blur="validateField('firstName')"
                   />
-                  <span class="input-icon">👤</span>
                 </div>
                 <transition name="fade">
                   <span v-if="validationErrors.firstName" class="error-text">
@@ -98,15 +63,15 @@
                   Last Name <span class="required">*</span>
                 </label>
                 <div class="input-wrapper">
+                  <span class="input-icon-left">👤</span>
                   <input
                     type="text"
                     v-model="profileData.lastName"
-                    :class="['form-input', { 'has-error': validationErrors.lastName }]"
-                    placeholder="Enter last name"
+                    :class="['form-input', 'with-icon-left', { 'has-error': validationErrors.lastName }]"
+                    placeholder="Doe"
                     required
                     @blur="validateField('lastName')"
                   />
-                  <span class="input-icon">👤</span>
                 </div>
                 <transition name="fade">
                   <span v-if="validationErrors.lastName" class="error-text">
@@ -120,15 +85,15 @@
                   Email Address <span class="required">*</span>
                 </label>
                 <div class="input-wrapper">
+                  <span class="input-icon-left">📧</span>
                   <input
                     type="email"
                     v-model="profileData.email"
-                    :class="['form-input', { 'has-error': validationErrors.email }]"
-                    placeholder="your.email@example.com"
+                    :class="['form-input', 'with-icon-left', { 'has-error': validationErrors.email }]"
+                    placeholder="john.doe@example.com"
                     required
                     @blur="validateField('email')"
                   />
-                  <span class="input-icon">📧</span>
                 </div>
                 <transition name="fade">
                   <span v-if="validationErrors.email" class="error-text">
@@ -142,15 +107,15 @@
                   Phone Number <span class="required">*</span>
                 </label>
                 <div class="input-wrapper">
+                  <span class="input-icon-left">📱</span>
                   <input
                     type="tel"
                     v-model="profileData.phone"
-                    :class="['form-input', { 'has-error': validationErrors.phone }]"
-                    placeholder="+63 XXX XXX XXXX"
+                    :class="['form-input', 'with-icon-left', { 'has-error': validationErrors.phone }]"
+                    placeholder="+63 912 345 6789"
                     required
                     @blur="validateField('phone')"
                   />
-                  <span class="input-icon">📱</span>
                 </div>
                 <transition name="fade">
                   <span v-if="validationErrors.phone" class="error-text">
@@ -162,26 +127,26 @@
               <div class="form-group full-width">
                 <label class="form-label">Delivery Address</label>
                 <div class="input-wrapper">
+                  <span class="input-icon-left">📍</span>
                   <textarea
                     v-model="profileData.address"
-                    class="form-input form-textarea"
+                    class="form-input form-textarea with-icon-left"
                     rows="3"
-                    placeholder="Enter your complete delivery address"
+                    placeholder="123 Main Street, Barangay, City, Province"
                   ></textarea>
-                  <span class="input-icon">📍</span>
                 </div>
               </div>
 
-              <div class="form-group">
+              <div class="form-group full-width">
                 <label class="form-label">Date of Birth</label>
                 <div class="input-wrapper">
+                  <span class="input-icon-left">🎂</span>
                   <input
                     type="date"
                     v-model="profileData.birthdate"
-                    class="form-input"
+                    class="form-input with-icon-left"
                     :max="maxBirthdate"
                   />
-                  <span class="input-icon">🎂</span>
                 </div>
               </div>
             </div>
@@ -325,67 +290,6 @@
         </div>
       </div>
 
-      <!-- Notification Preferences Card -->
-      <div class="settings-card">
-        <div class="card-header">
-          <h2 class="card-title">
-            <span class="title-icon">🔔</span>
-            Notification Preferences
-          </h2>
-        </div>
-        <div class="card-body">
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-icon">📧</span>
-              <div class="setting-text">
-                <div class="setting-label">Email Notifications</div>
-                <div class="setting-desc">Receive promotional emails and order updates</div>
-              </div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" v-model="profileData.emailNotifications" @change="togglePreference('emailNotifications')">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-icon">💬</span>
-              <div class="setting-text">
-                <div class="setting-label">SMS Notifications</div>
-                <div class="setting-desc">Get text messages for order status updates</div>
-              </div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" v-model="profileData.smsNotifications" @change="togglePreference('smsNotifications')">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-icon">🎁</span>
-              <div class="setting-text">
-                <div class="setting-label">Marketing Communications</div>
-                <div class="setting-desc">Receive special offers and promotions</div>
-              </div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" v-model="profileData.marketingEmails" @change="togglePreference('marketingEmails')">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div class="form-actions">
-            <button class="btn-primary" @click="savePreferences" :disabled="isSavingPreferences">
-              <span v-if="isSavingPreferences" class="spinner"></span>
-              <span v-else>💾</span>
-              {{ isSavingPreferences ? 'Saving Preferences...' : 'Save Preferences' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- Danger Zone Card -->
       <div class="settings-card danger-card">
         <div class="card-header">
@@ -462,10 +366,7 @@ export default {
         phone: '',
         address: '',
         birthdate: '',
-        profilePicture: '',
-        emailNotifications: true,
-        smsNotifications: true,
-        marketingEmails: false
+        profilePicture: ''
       },
       passwordData: {
         currentPassword: '',
@@ -478,7 +379,6 @@ export default {
       showConfirmPassword: false,
       isLoading: false,
       isPasswordLoading: false,
-      isSavingPreferences: false,
       successMessage: '',
       errorMessage: '',
       showDeleteModal: false,
@@ -537,10 +437,7 @@ export default {
             phone: userData.phone || '',
             address: userData.address || (userData.delivery_address?.street || ''),
             birthdate: userData.birthdate || '',
-            profilePicture: userData.profilePicture || userData.profile_picture || '',
-            emailNotifications: userData.emailNotifications !== false,
-            smsNotifications: userData.smsNotifications !== false,
-            marketingEmails: userData.marketingEmails || false
+            profilePicture: userData.profilePicture || userData.profile_picture || ''
           };
         } catch (error) {
           console.error('Error loading user data:', error);
@@ -721,75 +618,6 @@ export default {
         this.showErrorMessage(error.error || error.message || 'Failed to change password.');
       } finally {
         this.isPasswordLoading = false;
-      }
-    },
-
-    togglePreference(preference) {
-      // Preference already toggled by v-model, but we can log which one
-      console.log(`Preference ${preference} toggled`);
-    },
-
-    async savePreferences() {
-      this.isSavingPreferences = true;
-      
-      try {
-        const { authAPI } = await import('../services/api.js')
-        
-        const preferences = {
-          emailNotifications: this.profileData.emailNotifications,
-          smsNotifications: this.profileData.smsNotifications,
-          marketingEmails: this.profileData.marketingEmails
-        };
-
-        await authAPI.updateProfile({ preferences });
-
-        const userSession = JSON.parse(localStorage.getItem('ramyeon_user_session') || '{}');
-        localStorage.setItem('ramyeon_user_session', JSON.stringify({ ...userSession, ...preferences }));
-
-        this.showSuccessMessage('Preferences saved successfully!');
-      } catch (error) {
-        const userSession = JSON.parse(localStorage.getItem('ramyeon_user_session') || '{}');
-        localStorage.setItem('ramyeon_user_session', JSON.stringify({
-          ...userSession,
-          emailNotifications: this.profileData.emailNotifications,
-          smsNotifications: this.profileData.smsNotifications,
-          marketingEmails: this.profileData.marketingEmails
-        }));
-        this.showSuccessMessage('Preferences saved locally!');
-      } finally {
-        this.isSavingPreferences = false;
-      }
-    },
-
-    getInitials() {
-      const first = this.profileData.firstName || 'U';
-      const last = this.profileData.lastName || 'S';
-      return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
-    },
-
-    triggerFileUpload() {
-      this.$refs.fileInput.click();
-    },
-
-    handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        if (file.size > 2 * 1024 * 1024) {
-          this.showErrorMessage('Image size must be less than 2MB');
-          return;
-        }
-
-        if (!file.type.startsWith('image/')) {
-          this.showErrorMessage('Please upload an image file');
-          return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.profileData.profilePicture = e.target.result;
-          this.showSuccessMessage('Profile picture updated! Click "Save Changes" to save.');
-        };
-        reader.readAsDataURL(file);
       }
     },
 
@@ -1004,115 +832,6 @@ export default {
   padding: 1.5rem;
 }
 
-.card-body.center {
-  text-align: center;
-}
-
-/* Avatar Section */
-.avatar-section {
-  display: inline-block;
-}
-
-.avatar-wrapper {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  margin-bottom: 1rem;
-}
-
-.avatar-container {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  overflow: hidden;
-  position: relative;
-  border: 4px solid #ff4b4b;
-  box-shadow: 0 4px 12px rgba(255, 75, 75, 0.3);
-  transition: all 0.3s ease;
-}
-
-.avatar-wrapper:hover .avatar-container {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(255, 75, 75, 0.4);
-}
-
-.avatar-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #ff4b4b, #ff5c33);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-initials {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: white;
-}
-
-.avatar-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  gap: 0.5rem;
-}
-
-.avatar-container:hover .avatar-overlay {
-  opacity: 1;
-}
-
-.camera-icon {
-  font-size: 2rem;
-}
-
-.upload-text {
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.avatar-badge {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #ff4b4b, #ff5c33);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  border: 3px solid white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.avatar-hint {
-  color: #666;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-.dark-mode .avatar-hint {
-  color: #aaa;
-}
-
 /* Form */
 .form-grid {
   display: grid;
@@ -1151,19 +870,34 @@ export default {
 
 .form-input {
   width: 100%;
-  padding: 0.875rem 3rem 0.875rem 1rem;
+  padding: 1rem 1rem 1rem 1rem;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
   background: white;
   color: #333;
+  line-height: 1.5;
+  position: relative;
+}
+
+.form-input.with-icon-left {
+  padding-left: 3.5rem;
+}
+
+.form-input::placeholder {
+  color: #999;
+  opacity: 1;
 }
 
 .form-input:focus {
   outline: none;
   border-color: #ff4b4b;
   box-shadow: 0 0 0 3px rgba(255, 75, 75, 0.1);
+}
+
+.form-input:focus::placeholder {
+  color: #bbb;
 }
 
 .form-input.has-error {
@@ -1177,24 +911,70 @@ export default {
   border-color: #444;
 }
 
+.dark-mode .form-input::placeholder {
+  color: #777;
+  opacity: 1;
+}
+
+.dark-mode .form-input:focus::placeholder {
+  color: #666;
+}
+
 .form-textarea {
   resize: vertical;
   min-height: 80px;
-  padding-right: 1rem;
+  padding: 1rem 1rem 1rem 1rem;
 }
 
-.input-icon {
+.form-textarea.with-icon-left {
+  padding-left: 3.5rem;
+}
+
+.input-icon-left {
   position: absolute;
-  right: 1rem;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   pointer-events: none;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.form-textarea + .input-icon {
-  top: 1rem;
+.input-wrapper:hover .input-icon-left {
+  opacity: 0.7;
+}
+
+.form-input:focus + .input-icon-left,
+.input-wrapper:has(.form-input:focus) .input-icon-left {
+  opacity: 0.9;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.input-wrapper:has(.form-textarea) .input-icon-left {
+  top: 1.25rem;
   transform: none;
+}
+
+.input-wrapper:has(.form-textarea:focus) .input-icon-left {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.dark-mode .input-icon-left {
+  opacity: 0.6;
+}
+
+.dark-mode .input-wrapper:hover .input-icon-left {
+  opacity: 0.8;
+}
+
+.dark-mode .input-wrapper:has(.form-input:focus) .input-icon-left {
+  opacity: 1;
 }
 
 .password-toggle {
@@ -1274,121 +1054,6 @@ export default {
 
 .strength-label.very-strong {
   color: #059669;
-}
-
-/* Setting Row */
-.setting-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem;
-  border-radius: 8px;
-  border: 2px solid #f0f0f0;
-  margin-bottom: 1rem;
-  transition: all 0.3s ease;
-}
-
-.setting-row:hover {
-  border-color: #ff4b4b;
-  background: rgba(255, 75, 75, 0.02);
-}
-
-.dark-mode .setting-row {
-  border-color: #444;
-  background: #1f1f1f;
-}
-
-.setting-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
-}
-
-.setting-icon {
-  font-size: 2rem;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(255, 75, 75, 0.1), rgba(255, 92, 51, 0.1));
-  border-radius: 10px;
-  flex-shrink: 0;
-}
-
-.setting-label {
-  font-weight: 600;
-  font-size: 1.05rem;
-  color: #333;
-  margin-bottom: 0.25rem;
-}
-
-.dark-mode .setting-label {
-  color: #fff;
-}
-
-.setting-desc {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.dark-mode .setting-desc {
-  color: #aaa;
-}
-
-/* Toggle Switch */
-.toggle {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-  flex-shrink: 0;
-}
-
-.toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 34px;
-  border: 2px solid #e0e0e0;
-}
-
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 24px;
-  width: 24px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.toggle input:checked + .toggle-slider {
-  background: linear-gradient(135deg, #ff4b4b, #ff5c33);
-  border-color: #ff4b4b;
-}
-
-.toggle input:focus + .toggle-slider {
-  box-shadow: 0 0 4px #ff4b4b;
-}
-
-.toggle input:checked + .toggle-slider:before {
-  transform: translateX(26px);
 }
 
 /* Buttons */
@@ -1745,16 +1410,6 @@ export default {
     grid-column: 1 / -1 !important;
   }
 
-  .setting-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .toggle {
-    align-self: flex-end;
-  }
-
   .form-actions {
     flex-direction: column;
   }
@@ -1778,15 +1433,6 @@ export default {
 @media (max-width: 480px) {
   .header-title {
     font-size: 1.75rem;
-  }
-
-  .avatar-container {
-    width: 100px;
-    height: 100px;
-  }
-
-  .avatar-initials {
-    font-size: 2rem;
   }
 }
 </style>

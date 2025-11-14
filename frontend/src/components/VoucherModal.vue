@@ -20,49 +20,29 @@
             </p>
           </div>
           
-          <div class="voucher-tabs">
-            <button 
-              :class="['tab-btn', { active: activeTab === 'qr' }]"
-              @click="activeTab = 'qr'"
-            >
-              QR Code
-            </button>
-            <button 
-              :class="['tab-btn', { active: activeTab === 'code' }]"
-              @click="activeTab = 'code'"
-            >
-              Text Code
-            </button>
-          </div>
-          
-          <div class="tab-content">
-            <div v-if="activeTab === 'qr'" class="qr-tab">
-              <QRCode 
-                :code="voucher.qrCode"
-                :title="'Scan to Redeem'"
-                :subtitle="voucher.title"
-                :instructions="'Show this QR code to the cashier to apply your discount'"
-                size="large"
-              />
+          <div class="code-section">
+            <div class="code-header">
+              <h4>Your Promotion Code</h4>
+              <p class="code-subtitle">Show this code or enter it at checkout</p>
             </div>
-            
-            <div v-if="activeTab === 'code'" class="code-tab">
-              <div class="text-code-display">
-                <h4>Promo Code</h4>
-                <div class="code-container">
-                  <span class="promo-code">{{ voucher.code }}</span>
-                  <button 
-                    class="copy-code-btn"
-                    @click="copyCode"
-                    :class="{ 'copied': isCopied }"
-                  >
-                    {{ isCopied ? '✓ Copied!' : '📋 Copy' }}
-                  </button>
-                </div>
-                <p class="code-instructions">
-                  Enter this code at checkout or mention it when placing your order
-                </p>
+            <div class="code-display-wrapper">
+              <div class="promo-code-box">
+                <span class="promo-code">{{ voucher.code || voucher.promotion_id }}</span>
               </div>
+              <button 
+                class="copy-code-btn"
+                @click="copyCode"
+                :class="{ 'copied': isCopied }"
+              >
+                <svg v-if="!isCopied" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                {{ isCopied ? 'Copied!' : 'Copy Code' }}
+              </button>
             </div>
           </div>
           
@@ -78,45 +58,12 @@
           </div>
           
           <div class="modal-actions">
-            <button class="use-voucher-btn" @click="useVoucher" :disabled="isUsing">
-              <span v-if="!isUsing" class="btn-content">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                Use This Voucher
-              </span>
-              <span v-else class="btn-content">
-                <div class="loading-spinner"></div>
-                Using...
-              </span>
-            </button>
-            
-            <button class="save-voucher-btn" @click="saveVoucher" :disabled="isSaving" :class="{ 'saved': isSaved }">
-              <span v-if="!isSaving && !isSaved" class="btn-content">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Save for Later
-              </span>
-              <span v-else-if="isSaving" class="btn-content">
-                <div class="loading-spinner"></div>
-                Saving...
-              </span>
-              <span v-else class="btn-content">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Saved!
-              </span>
-            </button>
-            
-            <button v-if="isSaved" class="remove-voucher-btn" @click="removeVoucher" :disabled="isRemoving">
+            <button class="remove-voucher-btn" @click="removeVoucher" :disabled="isRemoving">
               <span v-if="!isRemoving" class="btn-content">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14zM10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                Remove
+                Remove from Profile
               </span>
               <span v-else class="btn-content">
                 <div class="loading-spinner"></div>
@@ -131,13 +78,8 @@
 </template>
 
 <script>
-import QRCode from './QRCode.vue'
-
 export default {
   name: 'VoucherModal',
-  components: {
-    QRCode
-  },
   props: {
     voucher: {
       type: Object,
@@ -156,14 +98,10 @@ export default {
       default: false
     }
   },
-  emits: ['close', 'useVoucher', 'saveVoucher'],
+  emits: ['close', 'removeVoucher'],
   data() {
     return {
-      activeTab: 'qr',
       isCopied: false,
-      isSaved: false,
-      isUsing: false,
-      isSaving: false,
       isRemoving: false
     }
   },
@@ -171,9 +109,7 @@ export default {
     isVisible(newVal) {
       if (newVal) {
         // Reset state when modal opens
-        this.activeTab = 'qr';
         this.isCopied = false;
-        this.checkIfSaved();
         // Prevent body scroll
         document.body.style.overflow = 'hidden';
       } else {
@@ -188,8 +124,9 @@ export default {
     },
     
     async copyCode() {
+      const codeText = this.voucher.code || this.voucher.promotion_id;
       try {
-        await navigator.clipboard.writeText(this.voucher.code);
+        await navigator.clipboard.writeText(codeText);
         this.isCopied = true;
         setTimeout(() => {
           this.isCopied = false;
@@ -197,7 +134,7 @@ export default {
       } catch (err) {
         // Fallback for older browsers
         const textArea = document.createElement('textarea');
-        textArea.value = this.voucher.code;
+        textArea.value = codeText;
         document.body.appendChild(textArea);
         textArea.select();
         document.execCommand('copy');
@@ -207,53 +144,6 @@ export default {
         setTimeout(() => {
           this.isCopied = false;
         }, 2000);
-      }
-    },
-    
-    async useVoucher() {
-      this.isUsing = true;
-      
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        this.$emit('useVoucher', this.voucher);
-        this.closeModal();
-      } catch (error) {
-        console.error('Error using voucher:', error);
-      } finally {
-        this.isUsing = false;
-      }
-    },
-    
-    async saveVoucher() {
-      if (!this.isSaved) {
-        this.isSaving = true;
-        
-        try {
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // Save voucher to localStorage
-          const savedVouchers = JSON.parse(localStorage.getItem('ramyeon_saved_vouchers') || '[]');
-          const voucherExists = savedVouchers.find(v => v.id === this.voucher.id);
-          
-          if (!voucherExists) {
-            savedVouchers.push({
-              ...this.voucher,
-              savedAt: new Date().toISOString()
-            });
-            localStorage.setItem('ramyeon_saved_vouchers', JSON.stringify(savedVouchers));
-          }
-          
-          this.isSaved = true;
-          this.$emit('saveVoucher', this.voucher);
-          
-        } catch (error) {
-          console.error('Error saving voucher:', error);
-        } finally {
-          this.isSaving = false;
-        }
       }
     },
     
@@ -269,19 +159,14 @@ export default {
         const updatedVouchers = savedVouchers.filter(v => v.id !== this.voucher.id);
         localStorage.setItem('ramyeon_saved_vouchers', JSON.stringify(updatedVouchers));
         
-        this.isSaved = false;
         this.$emit('removeVoucher', this.voucher);
+        this.closeModal();
         
       } catch (error) {
         console.error('Error removing voucher:', error);
       } finally {
         this.isRemoving = false;
       }
-    },
-    
-    checkIfSaved() {
-      const savedVouchers = JSON.parse(localStorage.getItem('ramyeon_saved_vouchers') || '[]');
-      this.isSaved = savedVouchers.some(v => v.id === this.voucher.id);
     },
     
     getVoucherDescription() {
@@ -423,111 +308,128 @@ export default {
   margin: 0;
 }
 
-.voucher-tabs {
-  display: flex;
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 4px;
-  gap: 4px;
+/* Code Section - Modern Design */
+.code-section {
+  background: linear-gradient(135deg, #fff8f6, #fef5f5);
+  border-radius: 16px;
+  padding: 30px;
+  border: 2px solid rgba(255, 71, 87, 0.1);
+  box-shadow: 0 4px 20px rgba(255, 71, 87, 0.08);
 }
 
-.tab-btn {
-  flex: 1;
-  padding: 12px 20px;
-  border: none;
-  background: transparent;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: #666;
-}
-
-.tab-btn.active {
-  background: white;
-  color: #ff4757;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.tab-btn:hover:not(.active) {
-  background: rgba(255, 71, 87, 0.1);
-  color: #ff4757;
-}
-
-.tab-content {
-  min-height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.qr-tab {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.code-tab {
-  width: 100%;
+.code-header {
   text-align: center;
+  margin-bottom: 25px;
 }
 
-.text-code-display h4 {
-  font-size: 1.3rem;
+.code-header h4 {
+  font-size: 1.4rem;
   color: #333;
-  margin: 0 0 20px 0;
-  font-weight: 600;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.code-container {
+.code-subtitle {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0;
+  font-weight: 500;
+}
+
+.code-display-wrapper {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.promo-code-box {
+  width: 100%;
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  padding: 25px 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(255, 71, 87, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.promo-code-box::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
 }
 
 .promo-code {
   font-family: 'Courier New', monospace;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #ff4757;
-  background: #f8f9fa;
-  padding: 15px 25px;
-  border-radius: 12px;
-  border: 2px dashed #ff4757;
-  letter-spacing: 2px;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 4px;
   text-transform: uppercase;
+  text-align: center;
+  display: block;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
+  word-break: break-all;
 }
 
 .copy-code-btn {
-  background: #ff4757;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-weight: 600;
+  background: white;
+  color: #ff4757;
+  border: 2px solid #ff4757;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.2);
 }
 
 .copy-code-btn:hover {
-  background: #ff3742;
-  transform: translateY(-2px);
+  background: #ff4757;
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4);
+}
+
+.copy-code-btn:active {
+  transform: translateY(-1px);
 }
 
 .copy-code-btn.copied {
   background: #00b894;
+  border-color: #00b894;
+  color: white;
   transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
 }
 
-.code-instructions {
-  color: #666;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin: 0;
+.copy-code-btn svg {
+  flex-shrink: 0;
 }
 
 .voucher-terms {
@@ -558,89 +460,48 @@ export default {
 
 .modal-actions {
   display: flex;
-  gap: 15px;
   justify-content: center;
-  flex-wrap: wrap;
+  margin-top: 10px;
 }
 
-.use-voucher-btn,
-.save-voucher-btn,
 .remove-voucher-btn {
-  padding: 15px 30px;
+  padding: 16px 40px;
   border: none;
-  border-radius: 12px;
-  font-weight: 600;
+  border-radius: 14px;
+  font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 150px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  min-width: 200px;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.3);
 }
 
 .btn-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-}
-
-.use-voucher-btn {
-  background: linear-gradient(135deg, #ff4757, #ff3742);
-  color: white;
-}
-
-.use-voucher-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 71, 87, 0.3);
-}
-
-.use-voucher-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.save-voucher-btn {
-  background: #f8f9fa;
-  color: #666;
-  border: 2px solid #e9ecef;
-}
-
-.save-voucher-btn:hover:not(:disabled) {
-  background: #e9ecef;
-  border-color: #dee2e6;
-  transform: translateY(-2px);
-}
-
-.save-voucher-btn.saved {
-  background: #d4edda;
-  color: #155724;
-  border-color: #c3e6cb;
-}
-
-.save-voucher-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.remove-voucher-btn {
-  background: #f8d7da;
-  color: #721c24;
-  border: 2px solid #f5c6cb;
+  gap: 10px;
 }
 
 .remove-voucher-btn:hover:not(:disabled) {
-  background: #f1b0b7;
-  border-color: #ef808a;
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #ff3742, #ff2f3a);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 30px rgba(255, 71, 87, 0.5);
+}
+
+.remove-voucher-btn:active:not(:disabled) {
+  transform: translateY(-1px) scale(1.01);
 }
 
 .remove-voucher-btn:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.2);
 }
 
 .loading-spinner {
@@ -676,30 +537,32 @@ export default {
   color: #b8b8b8;
 }
 
-.dark-mode .voucher-tabs {
-  background: #3a3a3a;
+.dark-mode .code-section {
+  background: linear-gradient(135deg, #3a3a3a, #333);
+  border-color: rgba(255, 71, 87, 0.2);
 }
 
-.dark-mode .tab-btn {
-  color: #b8b8b8;
-}
-
-.dark-mode .tab-btn.active {
-  background: #4a4a4a;
-  color: #ff4757;
-}
-
-.dark-mode .text-code-display h4 {
+.dark-mode .code-header h4 {
   color: #f5f5f5;
 }
 
-.dark-mode .promo-code {
-  background: #3a3a3a;
-  color: #ff4757;
+.dark-mode .code-subtitle {
+  color: #b8b8b8;
 }
 
-.dark-mode .code-instructions {
-  color: #b8b8b8;
+.dark-mode .promo-code-box {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+}
+
+.dark-mode .copy-code-btn {
+  background: #4a4a4a;
+  color: #ff4757;
+  border-color: #ff4757;
+}
+
+.dark-mode .copy-code-btn:hover {
+  background: #ff4757;
+  color: white;
 }
 
 .dark-mode .voucher-terms {
@@ -714,15 +577,12 @@ export default {
   color: #b8b8b8;
 }
 
-.dark-mode .save-voucher-btn {
-  background: #3a3a3a;
-  color: #b8b8b8;
-  border-color: #4a4a4a;
+.dark-mode .remove-voucher-btn {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
 }
 
-.dark-mode .save-voucher-btn:hover {
-  background: #4a4a4a;
-  border-color: #5a5a5a;
+.dark-mode .remove-voucher-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff3742, #ff2f3a);
 }
 
 /* Responsive design */
@@ -751,24 +611,32 @@ export default {
     gap: 20px;
   }
   
+  .code-section {
+    padding: 20px;
+  }
+  
+  .code-header h4 {
+    font-size: 1.2rem;
+  }
+  
   .promo-code {
-    font-size: 1.5rem;
-    padding: 12px 20px;
+    font-size: 1.6rem;
+    letter-spacing: 2px;
   }
   
-  .code-container {
-    flex-direction: column;
-    gap: 10px;
+  .promo-code-box {
+    padding: 20px;
   }
   
-  .modal-actions {
-    flex-direction: column;
+  .copy-code-btn {
+    padding: 12px 24px;
+    font-size: 0.9rem;
   }
   
-  .use-voucher-btn,
-  .save-voucher-btn {
+  .remove-voucher-btn {
     min-width: auto;
     width: 100%;
+    padding: 14px 32px;
   }
 }
 

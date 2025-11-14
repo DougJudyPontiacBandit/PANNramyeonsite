@@ -1,5 +1,11 @@
 <template>
   <div class="promotions-page">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">🎁 Active Promotions</h1>
+      <p class="page-subtitle">Discover amazing deals and save on your favorite items!</p>
+    </div>
+    
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-container">
       <div class="loading-spinner-big"></div>
@@ -21,227 +27,65 @@
       <p>Check back later for exciting deals and offers!</p>
     </div>
     
-    <!-- Main Content -->
+    <!-- Main Content - Database Promotions Only -->
     <main v-else class="main-content">
-      <!-- Flash Sale Section -->
-      <section class="flash-sale-section">
-        <div class="flash-sale-card" :class="{ 'disabled': !isLoggedIn }" @click="handlePromotionClick('FLASH30', 'Flash Sale')">
-          <div class="flash-sale-content">
-            <div class="flash-sale-image">
-              <img :src="ramyeonHero" alt="Ramyeon Bowl" />
-            </div>
-            <div class="flash-sale-text">
-              <p class="flash-sale-duration">24 HOURS ONLY</p>
-              <h2 class="flash-sale-title">FLASH SALE</h2>
-              <div class="flash-sale-discount">30% OFF</div>
-              <div class="flash-sale-code">
-                <span>Use Code: </span>
-                <span class="code-highlight">CORNER</span>
-              </div>
-              <div class="flash-sale-actions">
-                <button class="order-btn" @click.stop="handlePromotionClick('FLASH30', 'Flash Sale')">
-                  <span class="btn-icon">🛒</span>
-                  <span>Order Now</span>
-                </button>
-                <button v-if="isLoggedIn" class="save-promotion-btn futuristic-save" @click.stop="savePromotion('FLASH30', 'Flash Sale', '30% OFF')" :disabled="isSaving('FLASH30')">
-                  <span class="save-bg-effect"></span>
-                  <span class="btn-content">
-                    <span v-if="!isSaving('FLASH30')" class="btn-icon">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </span>
-                    <span v-if="!isSaving('FLASH30')">Save</span>
-                    <span v-else class="loading-spinner">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </span>
-                  </span>
-                </button>
+      <!-- Promotions Grid -->
+      <section class="promotions-grid">
+        <div 
+          v-for="promotion in promotions" 
+          :key="promotion.promotion_id"
+          class="promo-card"
+          :class="{ 'disabled': !isLoggedIn, 'featured': isFeaturedPromotion(promotion) }"
+          @click="handlePromotionClick(promotion.promotion_id, promotion.name)"
+        >
+          <!-- Promotion Badge -->
+          <div class="promo-badge" :class="getPromotionTypeClass(promotion.type)">
+            {{ getPromotionTypeLabel(promotion.type) }}
+          </div>
+          
+          <!-- Promotion Image -->
+          <div class="promo-image">
+            <img :src="getPromotionImage(promotion)" :alt="promotion.name" />
+            <div class="promo-overlay">
+              <div class="promo-discount">
+                {{ getDiscountDisplay(promotion) }}
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <!-- Top Food Items -->
-      <section class="food-items-section">
-        <div class="food-grid">
-          <div
-            v-for="(item, index) in topItems"
-            :key="index"
-            class="food-item-card"
-            :class="{ 'disabled': !isLoggedIn }"
-            @click="handlePromotionClick(item.code, item.name)"
-          >
-            <div class="food-image">
-              <img :src="item.image" :alt="item.name" />
+          
+          <!-- Promotion Content -->
+          <div class="promo-content">
+            <h3 class="promo-title">{{ promotion.name }}</h3>
+            <p class="promo-description">{{ promotion.description || 'Amazing deal awaits!' }}</p>
+            
+            <!-- Promotion Details -->
+            <div class="promo-details">
+              <div class="detail-item">
+                <span class="detail-icon">📅</span>
+                <span class="detail-text">Valid until {{ formatDate(promotion.end_date) }}</span>
+              </div>
+              <div v-if="promotion.usage_limit" class="detail-item">
+                <span class="detail-icon">🎯</span>
+                <span class="detail-text">{{ getRemainingUsage(promotion) }} left</span>
+              </div>
             </div>
-            <div class="food-info">
-              <h3 class="food-name">{{ item.name }}</h3>
-              <p class="food-price">{{ item.price }}</p>
-              <button v-if="isLoggedIn" class="save-item-btn futuristic-save-mini" @click.stop="savePromotion(item.code, item.name, item.discount || 'Special Offer')" :disabled="isSaving(item.code)">
-                <span class="save-bg-effect"></span>
-                <span class="btn-content">
-                  <span v-if="!isSaving(item.code)" class="btn-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                  <span v-else class="loading-spinner">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                </span>
+            
+            <!-- Action Buttons -->
+            <div class="promo-actions">
+              <button class="use-btn" @click.stop="handlePromotionClick(promotion.promotion_id, promotion.name)">
+                <span class="btn-icon">🎫</span>
+                <span>Use Now</span>
               </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Promotional Banner -->
-      <section class="promo-banner">
-        <div class="promo-banner-content">
-          <div class="promo-text">
-            <h3>ENJOY RAMYEON YOUR WAY!</h3>
-            <p>Discover authentic Korean flavors with every bowl</p>
-          </div>
-          <div class="promo-icon">🍜</div>
-        </div>
-      </section>
-
-      <!-- Bottom Food Items -->
-      <section class="food-items-section">
-        <div class="food-grid">
-          <div
-            v-for="(item, index) in bottomItems"
-            :key="index"
-            class="food-item-card"
-            :class="{ 'disabled': !isLoggedIn }"
-            @click="handlePromotionClick(item.code, item.name)"
-          >
-            <div class="food-image">
-              <img :src="item.image" :alt="item.name" />
-            </div>
-            <div class="food-info">
-              <h3 class="food-name">{{ item.name }}</h3>
-              <p class="food-price">{{ item.price }}</p>
-              <button v-if="isLoggedIn" class="save-item-btn futuristic-save-mini" @click.stop="savePromotion(item.code, item.name, item.discount || 'Special Offer')" :disabled="isSaving(item.code)">
-                <span class="save-bg-effect"></span>
-                <span class="btn-content">
-                  <span v-if="!isSaving(item.code)" class="btn-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                  <span v-else class="loading-spinner">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Special Offers -->
-      <section class="special-offers">
-        <div class="offers-grid">
-          <!-- Summer Offer -->
-          <div class="summer-offer-card" :class="{ 'disabled': !isLoggedIn }" @click="handlePromotionClick('SUMMER40', 'Summer Special')">
-            <div class="summer-offer-content">
-              <div class="summer-offer-text">
-                <h3>Special Summer Offer</h3>
-                <div class="discount">40% OFF</div>
-                <p>Ice cold different flavors to chill you in the summer!</p>
-              </div>
-              <div class="summer-offer-icon">🎁</div>
-            </div>
-            <button class="order-btn-red" @click.stop="handlePromotionClick('SUMMER40', 'Summer Special')">
-              <span>ORDER</span>
-            </button>
-            <button v-if="isLoggedIn" class="save-offer-btn futuristic-save" @click.stop="savePromotion('SUMMER40', 'Summer Special', '40% OFF')" :disabled="isSaving('SUMMER40')">
-              <span class="save-bg-effect"></span>
-              <span class="btn-content">
-                <span v-if="!isSaving('SUMMER40')" class="btn-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
-                <span v-if="!isSaving('SUMMER40')">Save</span>
-                <span v-else class="loading-spinner">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
-              </span>
-            </button>
-          </div>
-
-          <!-- Vouchers -->
-          <div class="vouchers-section">
-            <div class="voucher-card" :class="{ 'disabled': !isLoggedIn }" @click="handlePromotionClick('STORE10', 'Store Voucher')">
-              <div class="voucher-content">
-                <div class="voucher-icon">🎁</div>
-                <div class="voucher-text">
-                  <div class="voucher-discount">₱ 10 OFF</div>
-                  <div class="voucher-title">STORE VOUCHER</div>
-                </div>
-              </div>
-              <button v-if="isLoggedIn" class="save-voucher-btn futuristic-save-compact" @click.stop="savePromotion('STORE10', 'Store Voucher', '₱ 10 OFF')" :disabled="isSaving('STORE10')">
-                <span class="save-bg-effect"></span>
-                <span class="btn-content">
-                  <span v-if="!isSaving('STORE10')" class="btn-icon">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                  <span v-else class="loading-spinner">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                </span>
-              </button>
-            </div>
-            <div class="voucher-card delivery-voucher" :class="{ 'disabled': !isLoggedIn }" @click="handlePromotionClick('DELIVERY20', 'Delivery Voucher')">
-              <div class="voucher-content">
-                <div class="voucher-icon">🚚</div>
-                <div class="voucher-text">
-                  <div class="voucher-discount">₱ 20 OFF</div>
-                  <div class="voucher-title">DELIVERY VOUCHER</div>
-                </div>
-              </div>
-              <button v-if="isLoggedIn" class="save-voucher-btn futuristic-save-compact" @click.stop="savePromotion('DELIVERY20', 'Delivery Voucher', '₱ 20 OFF')" :disabled="isSaving('DELIVERY20')">
-                <span class="save-bg-effect"></span>
-                <span class="btn-content">
-                  <span v-if="!isSaving('DELIVERY20')" class="btn-icon">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                  <span v-else class="loading-spinner">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                </span>
+              <button 
+                v-if="isLoggedIn" 
+                class="save-btn" 
+                @click.stop="savePromotion(promotion.promotion_id, promotion.name, getDiscountDisplay(promotion))" 
+                :disabled="isSaving(promotion.promotion_id)"
+              >
+                <span v-if="!isSaving(promotion.promotion_id)" class="btn-icon">💾</span>
+                <span v-else class="loading-spinner-small">⌛</span>
+                <span v-if="!isSaving(promotion.promotion_id)">Save</span>
+                <span v-else>Saving...</span>
               </button>
             </div>
           </div>
@@ -249,18 +93,14 @@
       </section>
     </main>
 
-    <!-- Modal for QR Code -->
+    <!-- Modal for Promotion Code -->
     <div v-if="showModal" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
         <h3>{{ modalTitle }}</h3>
-        <div v-if="isTextCode" class="text-code">
-          <p>Your promo code:</p>
+        <div class="text-code">
+          <p class="code-label">Your Promotion Code:</p>
           <div class="code-display">{{ currentCode }}</div>
-          <p class="code-instruction">Show this code to the cashier</p>
-        </div>
-        <div v-else class="qr-code">
-          <canvas ref="qrCanvas"></canvas>
-          <p class="qr-instruction">Scan this QR code to apply the promotion</p>
+          <p class="code-instruction">Show this code to the cashier or enter it at checkout</p>
         </div>
         <button @click="closeModal" class="close-btn">Close</button>
       </div>
@@ -269,7 +109,6 @@
 </template>
 
 <script>
-import QRCode from 'qrcode'
 import { usePromotions } from '../composables/api/usePromotions.js'
 
 export default {
@@ -292,7 +131,6 @@ export default {
       showModal: false,
       modalTitle: '',
       currentCode: '',
-      isTextCode: false,
       savingPromotions: {}, // Track which promotions are being saved
       ramyeonHero: require('@/assets/food/ramyeon-hero.jpg'),
       // activePromotions now comes from usePromotions composable
@@ -309,37 +147,7 @@ export default {
     }
   },
   computed: {
-    // Split promotions into sections for display
-    flashSalePromotions() {
-      return this.promotions.filter(p => 
-        p.name?.toLowerCase().includes('flash') || 
-        p.description?.toLowerCase().includes('flash')
-      ).slice(0, 1) // Take first flash sale
-    },
-    
-    topItems() {
-      // Get percentage promotions for top section
-      return this.promotions
-        .filter(p => p.type === 'percentage' && !this.flashSalePromotions.includes(p))
-        .slice(0, 3)
-        .map(p => this.formatPromotionAsItem(p))
-    },
-    
-    bottomItems() {
-      // Get remaining promotions for bottom section
-      return this.promotions
-        .filter(p => !this.flashSalePromotions.includes(p) && 
-                     !this.topItems.some(item => item.code === p.promotion_id))
-        .slice(0, 3)
-        .map(p => this.formatPromotionAsItem(p))
-    },
-    
-    specialOffers() {
-      // Get fixed amount and buy_x_get_y promotions
-      return this.promotions
-        .filter(p => ['fixed_amount', 'buy_x_get_y'].includes(p.type))
-        .slice(0, 3)
-    }
+    // No computed properties needed - display all promotions directly
   },
   async mounted() {
     // Initialize promotions when component is mounted
@@ -358,33 +166,54 @@ export default {
       }
     },
     
-    formatPromotionAsItem(promotion) {
-      // Format database promotion for display in item cards
-      const discountText = promotion.type === 'percentage' 
-        ? `${promotion.discount_value}% OFF`
-        : `₱${promotion.discount_value} OFF`
-      
-      return {
-        name: promotion.name.toUpperCase(),
-        price: this.getPromotionPriceDisplay(promotion),
-        image: this.getPromotionImage(promotion),
-        code: promotion.promotion_id,
-        discount: discountText,
-        description: promotion.description
-      }
-    },
-    
-    getPromotionPriceDisplay(promotion) {
-      // Generate price display based on promotion type
+    getDiscountDisplay(promotion) {
+      // Generate discount display based on promotion type
       if (promotion.type === 'percentage') {
         return `${promotion.discount_value}% OFF`
       } else if (promotion.type === 'fixed_amount') {
-        return `Save ₱${promotion.discount_value}`
+        return `₱${promotion.discount_value} OFF`
       } else if (promotion.type === 'buy_x_get_y') {
         const config = promotion.discount_config || {}
         return `Buy ${config.buy_quantity || 2} Get ${config.get_quantity || 1} Free`
       }
       return 'Special Offer'
+    },
+    
+    getPromotionTypeLabel(type) {
+      const labels = {
+        'percentage': '% DISCOUNT',
+        'fixed_amount': 'FIXED DISCOUNT',
+        'buy_x_get_y': 'BUY & GET',
+        'free_shipping': 'FREE SHIPPING'
+      }
+      return labels[type] || 'SPECIAL OFFER'
+    },
+    
+    getPromotionTypeClass(type) {
+      return `badge-${type.replace('_', '-')}`
+    },
+    
+    isFeaturedPromotion(promotion) {
+      // Mark promotions with high discount values as featured
+      if (promotion.type === 'percentage' && promotion.discount_value >= 30) {
+        return true
+      }
+      if (promotion.type === 'fixed_amount' && promotion.discount_value >= 50) {
+        return true
+      }
+      return false
+    },
+    
+    formatDate(dateString) {
+      if (!dateString) return 'N/A'
+      const date = new Date(dateString)
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    },
+    
+    getRemainingUsage(promotion) {
+      if (!promotion.usage_limit) return 'Unlimited'
+      const remaining = promotion.usage_limit - (promotion.current_usage || 0)
+      return remaining > 0 ? remaining : 'Sold out'
     },
     
     getPromotionImage(promotion) {
@@ -424,40 +253,15 @@ export default {
     isSaving(code) {
       return this.savingPromotions[code] === true
     },
-    async showPromoCode(code, title) {
+    showPromoCode(code, title) {
       this.currentCode = code
       this.modalTitle = title
-      this.isTextCode = false
-      this.showModal = true
-
-      // Generate QR code
-      await this.$nextTick()
-      if (this.$refs.qrCanvas) {
-        try {
-          await QRCode.toCanvas(this.$refs.qrCanvas, code, {
-            width: 200,
-            margin: 2,
-            color: {
-              dark: '#000000',
-              light: '#FFFFFF'
-            }
-          })
-        } catch (error) {
-          console.error('Error generating QR code:', error)
-        }
-      }
-    },
-    showTextCode(code, title) {
-      this.currentCode = code
-      this.modalTitle = title
-      this.isTextCode = true
       this.showModal = true
     },
     closeModal() {
       this.showModal = false
       this.currentCode = ''
       this.modalTitle = ''
-      this.isTextCode = false
     },
 
     async savePromotion(code, title, discount) {
@@ -645,290 +449,330 @@ export default {
 </script>
 
 <style scoped>
-@import './Promotions.css';
-
 /* ============================================
-   FUTURISTIC SAVE BUTTON STYLES
-   Modern, Sleek, and Awesome Design
+   MODERN PROMOTIONS PAGE DESIGN
    ============================================ */
 
-/* Base Futuristic Save Button */
-.futuristic-save,
-.futuristic-save-mini,
-.futuristic-save-compact {
-  position: relative;
-  background: linear-gradient(135deg, #ff6f61 0%, #ff4a3d 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.promotions-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fef5f5 0%, #fff8f6 50%, #fef1ee 100%);
+  padding: 30px 20px;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Page Header */
+.page-header {
+  text-align: center;
+  margin-bottom: 50px;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.page-title {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ff6f61, #ff4757, #ff3838);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 15px 0;
+  letter-spacing: -1px;
+}
+
+.page-subtitle {
+  font-size: 1.2rem;
+  color: #666;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Main Content */
+.main-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Promotions Grid */
+.promotions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 30px;
+  padding: 20px 0;
+}
+
+/* Promotion Card */
+.promo-card {
+  background: white;
+  border-radius: 24px;
   overflow: hidden;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 8px 25px rgba(255, 111, 97, 0.4),
-              0 0 0 0 rgba(255, 111, 97, 0);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  position: relative;
+  border: 2px solid transparent;
+  animation: fadeInUp 0.6s ease-out backwards;
 }
 
-.futuristic-save {
-  padding: 12px 24px;
-  min-width: 120px;
+.promo-card:nth-child(1) { animation-delay: 0.1s; }
+.promo-card:nth-child(2) { animation-delay: 0.2s; }
+.promo-card:nth-child(3) { animation-delay: 0.3s; }
+.promo-card:nth-child(4) { animation-delay: 0.4s; }
+.promo-card:nth-child(5) { animation-delay: 0.5s; }
+.promo-card:nth-child(6) { animation-delay: 0.6s; }
+
+.promo-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(255, 111, 97, 0.25);
+  border-color: rgba(255, 111, 97, 0.3);
 }
 
-.futuristic-save-mini {
-  padding: 8px 16px;
-  font-size: 12px;
-  border-radius: 10px;
+.promo-card.featured {
+  border-color: #ff6f61;
+  background: linear-gradient(135deg, #fff 0%, #fff8f6 100%);
 }
 
-.futuristic-save-compact {
-  padding: 6px 12px;
-  font-size: 11px;
-  border-radius: 8px;
-  min-width: 70px;
-}
-
-/* Animated Background Effect */
-.save-bg-effect {
+.promo-card.featured::before {
+  content: '⭐ FEATURED';
   position: absolute;
-  top: 0;
-  left: -100%;
+  top: 15px;
+  left: 15px;
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #333;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+/* Promotion Badge */
+.promo-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.badge-percentage {
+  background: linear-gradient(135deg, #ff6f61, #ff4757);
+  color: white;
+}
+
+.badge-fixed-amount {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: white;
+}
+
+.badge-buy-x-get-y {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  color: white;
+}
+
+.badge-free-shipping {
+  background: linear-gradient(135deg, #fa709a, #fee140);
+  color: white;
+}
+
+/* Promotion Image */
+.promo-image {
+  position: relative;
+  height: 240px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+}
+
+.promo-image img {
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  transition: left 0.6s ease;
-  z-index: 0;
+  object-fit: cover;
+  transition: transform 0.5s ease;
 }
 
-/* Button Content Wrapper */
-.btn-content {
-  position: relative;
-  z-index: 1;
+.promo-card:hover .promo-image img {
+  transform: scale(1.1) rotate(2deg);
+}
+
+/* Promotion Overlay */
+.promo-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  padding: 30px 20px 20px;
+  transform: translateY(10px);
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+.promo-card:hover .promo-overlay {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.promo-discount {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  letter-spacing: -1px;
+}
+
+/* Promotion Content */
+.promo-content {
+  padding: 25px;
+}
+
+.promo-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.promo-description {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Promotion Details */
+.promo-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.detail-icon {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.detail-text {
+  font-weight: 500;
+}
+
+/* Promotion Actions */
+.promo-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.use-btn,
+.save-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.btn-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+.use-btn {
+  background: linear-gradient(135deg, #ff6f61, #ff4757);
+  color: white;
+  box-shadow: 0 6px 20px rgba(255, 111, 97, 0.3);
 }
 
-/* Hover Effects */
-.futuristic-save:hover,
-.futuristic-save-mini:hover,
-.futuristic-save-compact:hover {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 12px 35px rgba(255, 111, 97, 0.6),
-              0 0 30px rgba(255, 111, 97, 0.3),
-              inset 0 0 20px rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.4);
+.use-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(255, 111, 97, 0.5);
 }
 
-.futuristic-save:hover .save-bg-effect,
-.futuristic-save-mini:hover .save-bg-effect,
-.futuristic-save-compact:hover .save-bg-effect {
-  left: 100%;
+.use-btn:active {
+  transform: translateY(-1px);
 }
 
-/* Active/Click Effect */
-.futuristic-save:active,
-.futuristic-save-mini:active,
-.futuristic-save-compact:active {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(255, 111, 97, 0.5);
+.save-btn {
+  background: white;
+  color: #ff6f61;
+  border: 2px solid #ff6f61;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
-/* Disabled State */
-.futuristic-save:disabled,
-.futuristic-save-mini:disabled,
-.futuristic-save-compact:disabled {
+.save-btn:hover {
+  background: #ff6f61;
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(255, 111, 97, 0.3);
+}
+
+.save-btn:active {
+  transform: translateY(-1px);
+}
+
+.save-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
-  box-shadow: 0 4px 15px rgba(255, 111, 97, 0.2);
-  filter: grayscale(40%);
 }
 
-.futuristic-save:disabled:hover,
-.futuristic-save-mini:disabled:hover,
-.futuristic-save-compact:disabled:hover {
+.save-btn:disabled:hover {
+  background: white;
+  color: #ff6f61;
   transform: none;
-  box-shadow: 0 4px 15px rgba(255, 111, 97, 0.2);
 }
 
-/* Loading Spinner Animation */
-.loading-spinner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Loading Spinner */
+.loading-spinner-small {
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Pulsing Effect for Saving State */
-.futuristic-save:disabled .btn-content,
-.futuristic-save-mini:disabled .btn-content,
-.futuristic-save-compact:disabled .btn-content {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-/* Enhanced Flash Sale Actions */
-.flash-sale-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-/* Enhanced Order Button */
-.order-btn {
-  background: white;
-  color: #ff6f61;
-  border: 2px solid rgba(255, 111, 97, 0.3);
-  padding: 12px 32px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
-}
-
-.order-btn:hover {
-  background: #ff6f61;
-  color: white;
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.5);
-  border-color: white;
-}
-
-.order-btn:active {
-  transform: translateY(-2px) scale(1.02);
-}
-
-/* Enhanced Red Order Button */
-.order-btn-red {
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  width: 100%;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
-  margin-bottom: 8px;
-}
-
-.order-btn-red:hover {
-  background: linear-gradient(135deg, #c82333, #bd2130);
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 10px 30px rgba(220, 53, 69, 0.6);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.order-btn-red:active {
-  transform: translateY(-1px) scale(1.01);
-}
-
-/* Position save buttons */
-.food-info {
-  position: relative;
-}
-
-.save-item-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.save-offer-btn {
-  margin-top: 10px;
-  width: 100%;
-}
-
-.save-voucher-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-/* Disabled state for promotions */
-.food-item-card.disabled, 
-.flash-sale-card.disabled, 
-.summer-offer-card.disabled, 
-.voucher-card.disabled {
+/* Disabled Card */
+.promo-card.disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  filter: grayscale(50%);
+  filter: grayscale(60%);
 }
 
-.food-item-card.disabled:hover, 
-.flash-sale-card.disabled:hover, 
-.summer-offer-card.disabled:hover, 
-.voucher-card.disabled:hover {
+.promo-card.disabled:hover {
   transform: none;
-}
-
-/* Neon Glow Effect on Hover (Optional Enhancement) */
-@keyframes neonGlow {
-  0%, 100% {
-    box-shadow: 0 12px 35px rgba(255, 111, 97, 0.6),
-                0 0 30px rgba(255, 111, 97, 0.3);
-  }
-  50% {
-    box-shadow: 0 12px 35px rgba(255, 111, 97, 0.8),
-                0 0 40px rgba(255, 111, 97, 0.5);
-  }
-}
-
-.futuristic-save:hover,
-.futuristic-save-mini:hover,
-.futuristic-save-compact:hover {
-  animation: neonGlow 2s ease-in-out infinite;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .flash-sale-actions {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .order-btn,
-  .futuristic-save {
-    width: 100%;
-  }
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
 
 /* ============================================
@@ -965,11 +809,11 @@ export default {
 
 .error-container {
   background: white;
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 60px 40px;
   max-width: 500px;
   margin: 40px auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .error-icon {
@@ -996,27 +840,28 @@ export default {
   color: white;
   border: none;
   padding: 15px 40px;
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  box-shadow: 0 6px 20px rgba(255, 111, 97, 0.3);
 }
 
 .retry-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(255, 111, 97, 0.4);
+  box-shadow: 0 10px 30px rgba(255, 111, 97, 0.5);
 }
 
 .empty-promotions {
   background: white;
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 60px 40px;
   max-width: 500px;
   margin: 40px auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .empty-icon {
@@ -1036,5 +881,206 @@ export default {
   color: #666;
   font-size: 1.1rem;
   line-height: 1.6;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 2.2rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1rem;
+  }
+  
+  .promotions-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .promo-actions {
+    flex-direction: column;
+  }
+  
+  .use-btn,
+  .save-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .promotions-page {
+    padding: 20px 15px;
+  }
+  
+  .page-header {
+    margin-bottom: 30px;
+  }
+  
+  .page-title {
+    font-size: 1.8rem;
+  }
+  
+  .promo-image {
+    height: 180px;
+  }
+  
+  .promo-content {
+    padding: 20px;
+  }
+  
+  .promo-title {
+    font-size: 1.3rem;
+  }
+  
+  .promo-discount {
+    font-size: 2rem;
+  }
+}
+
+/* ============================================
+   MODAL STYLES
+   ============================================ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  max-width: 450px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-align: center;
+}
+
+.modal-content h3 {
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0 0 25px 0;
+  font-weight: 700;
+}
+
+.text-code {
+  margin: 30px 0;
+}
+
+.code-label {
+  font-size: 1rem;
+  color: #666;
+  font-weight: 600;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.code-display {
+  background: linear-gradient(135deg, #ff6f61, #ff4757);
+  padding: 30px 20px;
+  border-radius: 16px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 4px;
+  margin: 20px 0;
+  box-shadow: 0 8px 30px rgba(255, 111, 97, 0.4);
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+  transition: all 0.3s ease;
+}
+
+.code-display:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 40px rgba(255, 111, 97, 0.6);
+}
+
+.code-instruction {
+  font-size: 0.95rem;
+  color: #666;
+  margin-top: 15px;
+  line-height: 1.6;
+}
+
+.close-btn {
+  background: linear-gradient(135deg, #ff6f61, #ff4757);
+  color: white;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 20px rgba(255, 111, 97, 0.3);
+  margin-top: 20px;
+}
+
+.close-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(255, 111, 97, 0.5);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>

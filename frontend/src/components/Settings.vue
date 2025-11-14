@@ -153,73 +153,6 @@
         </div>
       </div>
 
-      <!-- Notifications -->
-      <div class="settings-card">
-        <div class="card-header">
-          <h2 class="card-title">
-            <span class="title-icon">🔔</span>
-            Notifications
-          </h2>
-        </div>
-        <div class="card-body">
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-icon">📲</span>
-              <div class="setting-text">
-                <div class="setting-label">Push Notifications</div>
-                <div class="setting-desc">Receive notifications on your device</div>
-              </div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" v-model="pushNotifications" @change="togglePushNotifications">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-icon">📦</span>
-              <div class="setting-text">
-                <div class="setting-label">Order Updates</div>
-                <div class="setting-desc">Get notified about order status</div>
-              </div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" v-model="orderUpdates" @change="toggleOrderUpdates">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-icon">🎁</span>
-              <div class="setting-text">
-                <div class="setting-label">Promotional Offers</div>
-                <div class="setting-desc">Receive notifications about deals</div>
-              </div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" v-model="promotionalOffers" @change="togglePromotionalOffers">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-icon">{{ notificationSound ? '🔊' : '🔇' }}</span>
-              <div class="setting-text">
-                <div class="setting-label">Sound</div>
-                <div class="setting-desc">Play sound for notifications</div>
-              </div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" v-model="notificationSound" @change="toggleNotificationSound">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
-      </div>
-
       <!-- Privacy & Security -->
       <div class="settings-card">
         <div class="card-header">
@@ -239,20 +172,6 @@
             </div>
             <label class="toggle">
               <input type="checkbox" v-model="locationServices" @change="toggleLocationServices">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-icon">📊</span>
-              <div class="setting-text">
-                <div class="setting-label">Analytics</div>
-                <div class="setting-desc">Help improve the app</div>
-              </div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" v-model="analytics" @change="toggleAnalytics">
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -293,20 +212,6 @@
             </div>
             <label class="toggle">
               <input type="checkbox" v-model="autoSaveCart" @change="toggleAutoSaveCart">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-icon">💳</span>
-              <div class="setting-text">
-                <div class="setting-label">Remember Payment</div>
-                <div class="setting-desc">Save your payment method</div>
-              </div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" v-model="rememberPayment" @change="toggleRememberPayment">
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -431,7 +336,6 @@
               <ul>
                 <li>Appearance settings</li>
                 <li>Language & Region</li>
-                <li>Notifications</li>
                 <li>Privacy & Security</li>
                 <li>App preferences</li>
               </ul>
@@ -460,15 +364,9 @@ export default {
       language: 'en',
       currency: 'PHP',
       timezone: 'Asia/Manila',
-      pushNotifications: true,
-      orderUpdates: true,
-      promotionalOffers: false,
-      notificationSound: true,
       locationServices: true,
-      analytics: false,
       twoFactorEnabled: false,
       autoSaveCart: true,
-      rememberPayment: false,
       quickReorder: true,
       successMessage: '',
       showResetModal: false,
@@ -492,15 +390,9 @@ export default {
       this.language = settings.language || 'en';
       this.currency = settings.currency || 'PHP';
       this.timezone = settings.timezone || 'Asia/Manila';
-      this.pushNotifications = settings.pushNotifications ?? true;
-      this.orderUpdates = settings.orderUpdates ?? true;
-      this.promotionalOffers = settings.promotionalOffers ?? false;
-      this.notificationSound = settings.notificationSound ?? true;
       this.locationServices = settings.locationServices ?? true;
-      this.analytics = settings.analytics ?? false;
       this.twoFactorEnabled = settings.twoFactorEnabled ?? false;
       this.autoSaveCart = settings.autoSaveCart ?? true;
-      this.rememberPayment = settings.rememberPayment ?? false;
       this.quickReorder = settings.quickReorder ?? true;
       
       localStorage.setItem('ramyeon_dark_mode', this.isDarkMode.toString());
@@ -516,15 +408,9 @@ export default {
         language: this.language,
         currency: this.currency,
         timezone: this.timezone,
-        pushNotifications: this.pushNotifications,
-        orderUpdates: this.orderUpdates,
-        promotionalOffers: this.promotionalOffers,
-        notificationSound: this.notificationSound,
         locationServices: this.locationServices,
-        analytics: this.analytics,
         twoFactorEnabled: this.twoFactorEnabled,
         autoSaveCart: this.autoSaveCart,
-        rememberPayment: this.rememberPayment,
         quickReorder: this.quickReorder,
         updatedAt: new Date().toISOString()
       };
@@ -606,44 +492,14 @@ export default {
       this.showSuccessMessage('Timezone updated!');
     },
 
-    togglePushNotifications() {
-      this.saveSettings();
-      this.showSuccessMessage(`Push notifications ${this.pushNotifications ? 'enabled' : 'disabled'}!`);
-    },
-
-    toggleOrderUpdates() {
-      this.saveSettings();
-      this.showSuccessMessage(`Order updates ${this.orderUpdates ? 'enabled' : 'disabled'}!`);
-    },
-
-    togglePromotionalOffers() {
-      this.saveSettings();
-      this.showSuccessMessage(`Promotional offers ${this.promotionalOffers ? 'enabled' : 'disabled'}!`);
-    },
-
-    toggleNotificationSound() {
-      this.saveSettings();
-      this.showSuccessMessage(`Notification sound ${this.notificationSound ? 'enabled' : 'disabled'}!`);
-    },
-
     toggleLocationServices() {
       this.saveSettings();
       this.showSuccessMessage(`Location services ${this.locationServices ? 'enabled' : 'disabled'}!`);
     },
 
-    toggleAnalytics() {
-      this.saveSettings();
-      this.showSuccessMessage(`Analytics ${this.analytics ? 'enabled' : 'disabled'}!`);
-    },
-
     toggleAutoSaveCart() {
       this.saveSettings();
       this.showSuccessMessage(`Auto-save cart ${this.autoSaveCart ? 'enabled' : 'disabled'}!`);
-    },
-
-    toggleRememberPayment() {
-      this.saveSettings();
-      this.showSuccessMessage(`Remember payment ${this.rememberPayment ? 'enabled' : 'disabled'}!`);
     },
 
     toggleQuickReorder() {
@@ -711,15 +567,9 @@ export default {
       this.language = 'en';
       this.currency = 'PHP';
       this.timezone = 'Asia/Manila';
-      this.pushNotifications = true;
-      this.orderUpdates = true;
-      this.promotionalOffers = false;
-      this.notificationSound = true;
       this.locationServices = true;
-      this.analytics = false;
       this.twoFactorEnabled = false;
       this.autoSaveCart = true;
-      this.rememberPayment = false;
       this.quickReorder = true;
       
       this.applyTheme();

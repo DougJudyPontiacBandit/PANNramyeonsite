@@ -28,39 +28,20 @@
             </div>
           </div>
           
-          <div class="points-actions">
-            <button class="promotions-btn" @click="$emit('setCurrentPage', 'Promotions')">
-              🎁 Browse Promotions
-            </button>
-            <button class="points-history-btn" @click="showPointsHistory">
-              📊 Points History
-            </button>
-          </div>
-          
-          <!-- Points Info -->
-          <div class="points-info">
-            <div class="info-item">
-              <span class="info-label">Earn Rate:</span>
-              <span class="info-value">20% of order value</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Redemption:</span>
-              <span class="info-value">4 points = ₱1 discount</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Min Redemption:</span>
-              <span class="info-value">40 points (₱10)</span>
-            </div>
-          </div>
         </div>
 
         <!-- Vouchers Section -->
         <div class="vouchers-section">
           <div class="section-header">
             <h2 class="section-title">{{ user.vouchers.length > 0 ? 'My Vouchers' : 'No Vouchers Yet' }}</h2>
-            <a v-if="user.vouchers.length > 2" href="#" class="see-all-btn" @click.prevent="showAllVouchers">
-              {{ showAllVouchersFlag ? 'Show Less' : 'See All' }}
-            </a>
+            <div class="header-actions">
+              <button class="promotions-btn" @click="$emit('setCurrentPage', 'Promotions')">
+                🎁 Browse Promotions
+              </button>
+              <a v-if="user.vouchers.length > 2" href="#" class="see-all-btn" @click.prevent="showAllVouchers">
+                {{ showAllVouchersFlag ? 'Show Less' : 'See All' }}
+              </a>
+            </div>
           </div>
           
           <div v-if="user.vouchers.length > 0" class="vouchers-grid">
@@ -88,18 +69,6 @@
           </div>
         </div>
 
-        <!-- QR Code Section -->
-        <div class="qr-section">
-          <h3 class="qr-title">Scan for Points</h3>
-          <QRCode
-            :code="user.pointsQRCode || generatePointsQRCode()"
-            title=""
-            subtitle=""
-            :instructions="'Show this QR code when making a purchase to earn points'"
-            size="medium"
-          />
-        </div>
-
         <!-- Settings Section -->
         <div class="settings-section">
           <h3 class="settings-title">Account & App Settings</h3>
@@ -114,16 +83,13 @@
           </div>
         </div>
         
-        <!-- Order & Payment Management -->
+        <!-- Order Management -->
         <div class="settings-section">
-          <h3 class="settings-title">Orders & Payments</h3>
-          <p class="settings-description">View your order history and payment transactions</p>
+          <h3 class="settings-title">Order Management</h3>
+          <p class="settings-description">View your order history and track your orders</p>
           <div class="settings-buttons">
             <button class="settings-btn order-history-btn" @click="$emit('setCurrentPage', 'OrderHistory')">
               📦 Order History
-            </button>
-            <button class="settings-btn payment-history-btn" @click="$emit('setCurrentPage', 'PaymentHistory')">
-              💳 Payment History
             </button>
           </div>
         </div>
@@ -143,13 +109,11 @@
 </template>
 
 <script>
-import QRCode from './QRCode.vue'
 import VoucherModal from './VoucherModal.vue'
 
 export default {
   name: 'Profile',
   components: {
-    QRCode,
     VoucherModal
   },
   emits: ['setCurrentPage'],
@@ -208,8 +172,7 @@ export default {
         const userData = JSON.parse(userSession);
         this.user = {
           ...userData,
-          vouchers: [],
-          pointsQRCode: userData.pointsQRCode || this.generatePointsQRCode()
+          vouchers: []
         };
       } else {
         // Default user data if no session
@@ -218,8 +181,7 @@ export default {
           lastName: 'User',
           email: 'guest@ramyeoncorner.com',
           points: 3280,
-          vouchers: [],
-          pointsQRCode: this.generatePointsQRCode()
+          vouchers: []
         };
       }
     },
@@ -288,10 +250,6 @@ export default {
     loadDarkModePreference() {
       const darkMode = localStorage.getItem('ramyeon_dark_mode');
       this.isDarkMode = darkMode === 'true';
-    },
-
-    generatePointsQRCode() {
-      return `POINTS-${this.user.email || 'guest'}-${Date.now()}`;
     },
     
     // Method to refresh profile data (can be called from other components)
@@ -362,11 +320,6 @@ export default {
 
     showAllVouchers() {
       this.showAllVouchersFlag = !this.showAllVouchersFlag;
-    },
-
-    showPointsHistory() {
-      // Show points history modal
-      this.showPointsHistoryModal = true;
     },
 
     updateUserSession() {
@@ -542,80 +495,29 @@ export default {
   font-weight: 500;
 }
 
-.points-actions {
+/* Voucher Section Header Actions */
+.header-actions {
   display: flex;
+  align-items: center;
   gap: 15px;
-  margin-bottom: 20px;
 }
 
-.promotions-btn,
-.points-history-btn {
-  flex: 1;
-  padding: 12px 20px;
+.header-actions .promotions-btn {
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  border-radius: 10px;
   border: none;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.95rem;
 }
 
-.promotions-btn {
-  background: linear-gradient(135deg, #ff4757, #ff3742);
-  color: white;
-}
-
-.promotions-btn:hover {
+.header-actions .promotions-btn:hover {
   background: linear-gradient(135deg, #ff3742, #ff2f3a);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 71, 87, 0.3);
-}
-
-.points-history-btn {
-  background: linear-gradient(135deg, #ff9800, #f57c00);
-  color: white;
-}
-
-.points-history-btn:hover {
-  background: linear-gradient(135deg, #f57c00, #ef6c00);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.3);
-}
-
-.points-info {
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 12px;
-  padding: 15px;
-  border: 1px solid rgba(255, 152, 0, 0.2);
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 152, 0, 0.1);
-}
-
-.info-item:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  font-weight: 600;
-  color: #e65100;
-  font-size: 0.9rem;
-}
-
-.info-value {
-  font-weight: 500;
-  color: #bf360c;
-  font-size: 0.9rem;
-}
-
-/* Smooth hover effect */
-.promotions-btn {
-  transition: all 0.3s ease;
 }
 
 /* Responsive enhancements */

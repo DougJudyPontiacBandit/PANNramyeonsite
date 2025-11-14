@@ -93,7 +93,6 @@
 
         <div class="order-actions">
           <button @click="viewOrderDetails(order)" class="btn-details">View Details</button>
-          <button v-if="order.status === 'pending'" @click="cancelOrder(order)" class="btn-cancel">Cancel Order</button>
           <button @click="reorder(order)" class="btn-reorder">Order Again</button>
         </div>
       </div>
@@ -357,25 +356,6 @@ export default {
     },
     closeModal() {
       this.selectedOrder = null;
-    },
-    cancelOrder(order) {
-      if (confirm(`Are you sure you want to cancel order ${order.id}?`)) {
-        // Update order status
-        const orderIndex = this.orders.findIndex(o => o.id === order.id);
-        if (orderIndex !== -1) {
-          this.orders[orderIndex].status = 'cancelled';
-          
-          // Save to user-specific orders
-          const userId = this.userProfile?.id || this.userProfile?.email || 'guest';
-          const userOrdersKey = `ramyeon_orders_${userId}`;
-          localStorage.setItem(userOrdersKey, JSON.stringify(this.orders));
-          
-          // Also update global orders
-          localStorage.setItem('ramyeon_orders', JSON.stringify(this.orders));
-          
-          alert('Order cancelled successfully');
-        }
-      }
     },
     reorder(order) {
       // Add all items from this order to cart
@@ -776,16 +756,6 @@ export default {
 .btn-details:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(9, 132, 227, 0.4);
-}
-
-.btn-cancel {
-  background: linear-gradient(135deg, #fab1a0 0%, #e17055 100%);
-  color: white;
-}
-
-.btn-cancel:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(225, 112, 85, 0.4);
 }
 
 .btn-reorder {
